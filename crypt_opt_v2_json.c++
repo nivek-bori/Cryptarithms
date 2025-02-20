@@ -6,9 +6,17 @@
 #include <functional>
 #include <algorithm>
 #include <random>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 using namespace std;
 
+using json = nlohmann::json;
+
+// Configuration
+int numEncryptions = 500;
+int numEquationsPerEncryption = 2;
+int numDigits = 4;
+
+bool readFromFile = false;
 string filename = "cryptarithm.out";
 ofstream fout(filename, std::ios::out | std::ios::trunc); // Clears the file
 
@@ -175,11 +183,6 @@ public:
 };
 
 int main() {
-    // Configuration
-    int numEncryptions = 500;
-    int numEquationsPerEncryption = 2;
-    int numDigits = 4;
-
     // Reserve data for recording equation difficulties
     vector<pair<string, int>> equationDifficulty;
     equationDifficulty.reserve(numEncryptions * numEquationsPerEncryption);
@@ -218,8 +221,24 @@ int main() {
         }
     }
 
-    nolhmann::json json_object = equationDifficulty;
-    string json_string = json_object.dump()
+    // Import JSON Data & Write JSON Data
+    json data;
+    if (readFromFile) {
+        std::ifstream file("data.json");
+        if (!file.is_open()) {
+            cout << "Error opening file" << endl;
+            return 1;
+        }
+
+        try {
+            file >> import_data;
+        } catch (json::parse_error& e) {
+            std::cerr << "JSON parse error: " << e.what() << std::endl;
+            return 1;
+        }
+    }
+
+    string json_string = data.dump(equationDifficulty, indent=4);
     
     // Output results
     fout << json_string << endl;
