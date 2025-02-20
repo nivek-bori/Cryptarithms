@@ -6,7 +6,11 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+#include <nlohmann/json.hpp>
 using namespace std;
+
+string filename = "cryptarithm.out";
+ofstream fout(filename, std::ios::out | std::ios::trunc); // Clears the file
 
 class CryptarithmSolver {
 public:
@@ -214,9 +218,13 @@ int main() {
         }
     }
 
+    nolhmann::json json_object = equationDifficulty;
+    string json_string = json_object.dump()
+    
     // Output results
+    fout << json_string << endl;
     for (auto &eq : equationDifficulty) {cout << eq.first << " -> " << eq.second << " solutions" << "\n";}
+    
     cout << "TASK END" << endl;
-
     return 0;
 }
