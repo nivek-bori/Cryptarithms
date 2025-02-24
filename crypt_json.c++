@@ -1,3 +1,5 @@
+// TODO: Install json.hpp in opt/local/include -> run crypt_json -> finish dataset_balancer
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -6,7 +8,18 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+#include <nlohmann/json.hpp>
+
 using namespace std;
+using json = nlohmann::json;
+
+// Configuration
+int numEncryptions = 5;
+int numEquationsPerEncryption = 1;
+int numDigits = 4;
+
+bool addToFile = false;
+string filename = "data.jsonl";
 
 class CryptarithmSolver {
 public:
@@ -18,6 +31,7 @@ public:
     vector<int> results;
     unordered_set<int> startingSymbols;
     int equationSolutions;
+    vector<string> solutions;
 
     // Current Solution Data
     vector<int> sol;
@@ -29,7 +43,7 @@ public:
         results(digits + 1, 0),
         equationSolutions(0),
         sol(26, -1),
-        valUsed(26, false)
+        valUsed(10, false)
     {}
 
     void reset() {
@@ -37,8 +51,48 @@ public:
         results = vector<int>(numDigits + 1, 0);
         startingSymbols.clear();
         sol = vector<int>(26, -1);
-        valUsed = vector<bool>(26, false);
+        valUsed = vector<bool>(10, false);
         equationSolutions = 0;
+    }
+
+    bool verifySolution() {
+        // Check if starting symbols are not assigned to 0
+        for (int symbol : startingSymbols) {
+            if (sol[symbol] == 0) {
+                return false;
+            }
+        }
+
+        // Check if all assigned values are unique
+        vector<bool> used(10, false);
+        for (int i = 0; i < 26; i++) {
+            if (sol[i] != -1) {
+                if (used[sol[i]]) {
+                    return false;  // Value already used
+                }
+                used[sol[i]] = true;
+            }
+        }
+
+        int carry = 0;
+        for (int col = 0; col < numDigits; col++) {
+            int sum = carry;
+            for (const auto &freqVal : columnsToFreq[col]) {
+                if (sol[freqVal.first] == -1) {return false;}  // Incomplete solution
+                sum += sol[freqVal.first] * freqVal.second;
+            }
+            
+            if (sol[results[col]] == -1) {return false;}  // Incomplete solution
+            if ((sum % 10) != sol[results[col]]) {return false;}  // Result doesn't match
+            carry = sum / 10;
+        }
+
+        if (results[numDigits] != -1) {
+            if (sol[results[numDigits]] == -1) {return carry == 0;}
+            if (sol[results[numDigits]] != carry) {return false;}
+        }
+
+        return true;
     }
 
     void calculateColumn(int col, int carry) {
@@ -50,7 +104,7 @@ public:
             if (resultSymbol != -1 && sol.at(resultSymbol) != -1) {validSol = (sol.at(resultSymbol) == carry);} // If resultSymbol has been set -> Check if carry matches
             else {validSol = !valUsed.at(carry);} // If resultSymbol has not been set -> Check if carry val hasn't been used
 
-            if (validSol) {equationSolutions++;}
+            if (validSol && verifySolution()) {equationSolutions++;}
             return;
         }
 
@@ -171,10 +225,31 @@ public:
 };
 
 int main() {
-    // Configuration
-    int numEncryptions = 500;
-    int numEquationsPerEncryption = 2;
-    int numDigits = 4;
+    // IO Processing
+    ofstream fout;
+    if (addToFile) {
+        fout.open(filename, ios::out | ios::app); // Don't clear file
+        if (!fout.is_open()) {cerr << "Error opening output file: " << filename << endl; return 1;}
+    } else {
+        fout.open(filename, ios::out | ios::trunc); // Clear file
+        if (!fout.is_open()) {cerr << "Error opening output file: " << filename << endl; return 1;}
+    }
+
+    ifstream fin(filename);
+    string metadataLine;
+    if (getline(fin, metadataLine)) {
+        json metadata = json::parse(metadataLine);
+        
+        if (metadata["num_digits"] != numDigits) {
+            cerr << "Num Digits Saved vs. Generated " << metadata["num_digits"] << " vs. " << numDigits << endl;
+            return 1;
+        }
+    } else { // If file is empty -> add metadata
+        json metadata;
+        metadata["num_digits"] = numDigits;
+        fout << metadata.dump() << endl;
+    }
+    fin.close();
 
     // Reserve data for recording equation difficulties
     vector<pair<string, int>> equationDifficulty;
@@ -214,9 +289,17 @@ int main() {
         }
     }
 
-    // Output results
-    for (auto &eq : equationDifficulty) {cout << eq.first << " -> " << eq.second << " solutions" << "\n";}
+    // Writing data to file
+    for (auto &eq : equationDifficulty) {
+        json entry;
+        entry["equation"] = eq.first;
+        entry["num_solutions"] = eq.second;
+        
+        fout << entry.dump() << "\n";
+        cout << eq.first << " -> " << eq.second << " solutions" << "\n";
+    }
+    fout.close();
+    
     cout << "TASK END" << endl;
-
     return 0;
 }

@@ -6,7 +6,13 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+
 using namespace std;
+
+// Configuration
+int numEncryptions = 5;
+int numEquationsPerEncryption = 1;
+int numDigits = 4;
 
 class CryptarithmSolver {
 public:
@@ -20,7 +26,7 @@ public:
     int equationSolutions;
 
     // Current Solution Data
-    unordered_map<int, int> sol;
+    vector<int> sol;
     vector<bool> valUsed;
 
     CryptarithmSolver(int digits): 
@@ -28,16 +34,16 @@ public:
         columnsToFreq(digits),
         results(digits + 1, 0),
         equationSolutions(0),
-        sol(26),
-        valUsed(26, false)
+        sol(26, -1),
+        valUsed(10, false)
     {}
 
     void reset() {
         columnsToFreq = vector<unordered_map<int, int>>(numDigits);
         results = vector<int>(numDigits + 1, 0);
         startingSymbols.clear();
-        sol = unordered_map<int, int>(26);
-        valUsed = vector<bool>(26, false);
+        sol = vector<int>(26, -1);
+        valUsed = vector<bool>(10, false);
         equationSolutions = 0;
     }
 
@@ -47,9 +53,12 @@ public:
             int resultSymbol = results[numDigits];
             bool validSol = false;
 
-            auto it = sol.find(resultSymbol);
-            if (it != sol.end()) {validSol = (it->second == carry);} // If resultSymbol has been set -> Check if carry matches
-            else {validSol = !valUsed.at(carry);} // If resultSymbol has not been set -> Check if carry val hasn't been used
+            if (resultSymbol != -1) {
+                if (sol.at(resultSymbol) != -1) {validSol = (sol.at(resultSymbol) == carry);} // If resultSymbol has been set -> Check if carry matches
+                else {validSol = !valUsed.at(carry);} // If resultSymbol has not been set -> Check if carry val hasn't been used
+            } else {
+                validSol = (carry == 0);
+            }
 
             if (validSol) {equationSolutions++;}
             return;
@@ -60,8 +69,7 @@ public:
         int knownSum = 0;
 
         for (const auto &freqVal : freq) { // freqVal: symbol to freq
-            auto it = sol.find(freqVal.first);
-            if (it != sol.end()) {knownSum += it->second * freqVal.second;}  // value of freqSymbol * freq
+            if (sol.at(freqVal.first) != -1) {knownSum += sol.at(freqVal.first) * freqVal.second;}  // value of freqSymbol * freq
             else if (freqVal.first != -1) {unknown.push_back(freqVal.first);}
         }
 
@@ -84,7 +92,7 @@ public:
     
                 assignIndex(col, unknown, knownSum, freq, carry, index + 1);
 
-                sol.erase(unknownSymbol);
+                sol[unknownSymbol] = -1;
                 valUsed[val] = false;
             }
         };
@@ -95,12 +103,11 @@ public:
         int remainder = (knownSum + carry) % 10;
         
         int resultSymbol = results.at(col);
-        auto it = sol.find(resultSymbol);
-        if (it == sol.end()) {
+        if (sol.at(resultSymbol) == -1) {
             sol[resultSymbol] = remainder;
             calculateColumn(col + 1, (knownSum + carry) / 10);
-            sol.erase(resultSymbol);
-        } else if (it->second == remainder) {
+            sol[resultSymbol] = -1;
+        } else if (sol.at(resultSymbol) == remainder) {
             calculateColumn(col + 1, (knownSum + carry) / 10);
         }
     }
@@ -174,11 +181,6 @@ public:
 };
 
 int main() {
-    // Configuration
-    int numEncryptions = 500;
-    int numEquationsPerEncryption = 2;
-    int numDigits = 4;
-
     // Reserve data for recording equation difficulties
     vector<pair<string, int>> equationDifficulty;
     equationDifficulty.reserve(numEncryptions * numEquationsPerEncryption);
@@ -217,9 +219,9 @@ int main() {
         }
     }
 
-    // Output results
+    // Output generated dataset
     for (auto &eq : equationDifficulty) {cout << eq.first << " -> " << eq.second << " solutions" << "\n";}
+    
     cout << "TASK END" << endl;
-
     return 0;
 }
