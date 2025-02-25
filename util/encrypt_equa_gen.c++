@@ -1,11 +1,5 @@
-#include <vector>
-#include <array>
-#include <algorithm>
 #include <iostream>
-#include <unordered_map>
-#include <unordered_set>
 #include <random>
-#include <functional>
 using namespace std;
 
 class Encryptor {
@@ -143,20 +137,24 @@ public:
 
 int main() {
     int numDigits = 10;
-    bool displayAll = true;
+    int displayCode = 0; // 0 - No display, 1 - Minumal display, 2 - All display
 
     Encryptor encryptor(numDigits);
-
     array<vector<int>, 4> equation = encryptor.generateEncryptedEquation();
 
-    if (displayAll) {
-        encryptor.display();
-    } else {
-        cout << "\nEncrypted Equation (symbols):\n";
-        for (int i = 0; i < equation[0].size(); i++) {cout << equation[0][i] << " ";} cout << "\n";
-        for (int i = 0; i < equation[1].size(); i++) {cout << equation[1][i] << " ";} cout << "\n";
-        for (int i = 0; i < equation[2].size(); i++) {cout << equation[2][i] << " ";} cout << "\n";
-        for (int i = 0; i < equation[3].size(); i++) {cout << equation[3][i] << " ";} cout << endl;
+    switch (displayCode) {
+        case 0:
+            break;
+        case 1:
+            cout << "\nEncrypted Equation (symbols):\n";
+            for (int i = 0; i < equation[0].size(); i++) {cout << equation[0][i] << " ";} cout << "\n";
+            for (int i = 0; i < equation[1].size(); i++) {cout << equation[1][i] << " ";} cout << "\n";
+            for (int i = 0; i < equation[2].size(); i++) {cout << equation[2][i] << " ";} cout << "\n";
+            for (int i = 0; i < equation[3].size(); i++) {cout << equation[3][i] << " ";} cout << endl;
+            break;
+        case 2:
+            encryptor.display();
+            break;
     }
 
     cout << "Task End" << endl;
