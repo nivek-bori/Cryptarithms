@@ -2,7 +2,7 @@
 #include <random>
 using namespace std;
 
-class Encryptor {
+class EquationGenerator {
 private:
     int numDigits;
 
@@ -39,6 +39,7 @@ private:
         int b = distrib(gen);
         int c = distrib(gen);
         int r = a + b + c;
+        equation = to_string(a) + " + " + to_string(b) + " + " + to_string(c) + " = " + to_string(r);
         
         array<int, 4> equationNumbers;
         equationNumbers[0] = a;
@@ -74,12 +75,13 @@ private:
     }
 
 public:
+    string equation;
     array<int, 10> encryptMapStore;
     array<int, 4> equationNumbersStore;
     array<vector<int>, 4> equationStore;
     array<vector<int>, 4> encryptedEquationStore;
 
-    Encryptor(int digits): numDigits(digits + 1) 
+    EquationGenerator(int digits): numDigits(digits + 1) 
     {}
 
     array<vector<int>, 4> generateEncryptedEquation() {
@@ -147,7 +149,7 @@ int main() {
     int numDigits = 10;
     int displayCode = 0; // 0 - No display, 1 - Minumal display, 2 - All display
 
-    Encryptor encryptor(numDigits);
+    EquationGenerator encryptor(numDigits);
     array<vector<int>, 4> equation = encryptor.generateEncryptedEquation();
 
     switch (displayCode) {

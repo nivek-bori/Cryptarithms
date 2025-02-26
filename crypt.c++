@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <unordered_map>
 
 using namespace std;
 
@@ -18,14 +19,19 @@ private:
     int colI;
     int carry;
 
+    int current_solutions;
+
     void solveColumn() {
         if (colI == num_digits) {
             // Assert: All columns solved
-            
-            
+            if (verify_solution()) {
+                current_solutions++;
+            }
+
+            return;
         }
 
-        auto &col = columns[colI]; // Symbol to Frequency
+        auto &col = columns.at(colI); // Symbol to Frequency
 
         int known_sum = carry; // Remember this includes carry
         array<bool, 26> unknown; // Symbols to Value
@@ -128,42 +134,44 @@ private:
     bool verify_solution() {
         // Assert: All columns correctly solved
         int carryLoc = 0;
-            for (int cI = 0; cI < num_digits; cI++) {
-                array<int, 26> &col = columns.at(cI); // Symbol to Frequency
-                int resultS = results.at(cI);
-                
-                // Assert: All symbols in column are assigned
-                for (int s = 0; s < 26; s++) {
-                    if (col.at(s) != -1 && decrypt_map.at(s) == -1) {
-                        cerr << "ERROR: Symbol in equation not assigned" << endl;
-                        return;
-                    }
+        for (int cI = 0; cI < num_digits; cI++) {
+            array<int, 26> &col = columns.at(cI); // Symbol to Frequency
+            int resultS = results.at(cI);
+            
+            // Assert: All symbols in column are assigned
+            for (int s = 0; s < 26; s++) {
+                if (col.at(s) != -1 && decrypt_map.at(s) == -1) {
+                    cerr << "ERROR: Symbol in equation not assigned" << endl;
+                    return false;
                 }
-                if (decrypt_map.at(resultS) == -1) {
-                    cerr << "ERROR: Result symbol not assigned" << endl;
-                    return;
-                }
-
-                int colSum = carryLoc;
-                for (int s = 0; s < 26; s++) {
-                    if (col.at(s) != -1) {
-                        colSum += decrypt_map.at(s) * col.at(s);
-                    }
-                }
-
-                int remainder = colSum % 10;
-                if (decrypt_map.at(resultS) != remainder) {
-                    cerr << "ERROR: Result value incorrect" << endl;
-                    return;
-                }
-
-                carryLoc = colSum / 10;
+            }
+            if (decrypt_map.at(resultS) == -1) {
+                cerr << "ERROR: Result symbol not assigned" << endl;
+                return false;
             }
 
-            if (carryLoc != 0) {
-                cerr << "ERROR: Final carry not 0" << endl;
-                return;
+            int colSum = carryLoc;
+            for (int s = 0; s < 26; s++) {
+                if (col.at(s) != -1) {
+                    colSum += decrypt_map.at(s) * col.at(s);
+                }
             }
+
+            int remainder = colSum % 10;
+            if (decrypt_map.at(resultS) != remainder) {
+                cerr << "ERROR: Result value incorrect" << endl;
+                return false;
+            }
+
+            carryLoc = colSum / 10;
+        }
+
+        if (carryLoc != 0) {
+            cerr << "ERROR: Final carry not 0" << endl;
+            return false;
+        }
+
+        return true;
     }
 
 public:
@@ -187,14 +195,17 @@ public:
     }
 
     int solve(vector<int> a, vector<int> b, vector<int> c, vector<int> r) {
+        reset();
+
         if (!verify_equation) {
             cerr << "Invalid equation" << endl;
             return -1;
         }
-
         process_equation(a, b, c, r);
 
-        // TODO: Rest of logic
+        solveColumn(); // Start of solve
+
+        return current_solutions;
     }
 
     bool verify_equation(vector<int> a, vector<int> b, vector<int> c, vector<int> r) {
@@ -206,23 +217,23 @@ public:
 
         // Symbols are valid
         for (int i = 0; i < num_digits; i++) {
-            if (a[i] < 0 || a[i] >= 26) {return false;}
-            if (b[i] < 0 || b[i] >= 26) {return false;}
-            if (c[i] < 0 || c[i] >= 26) {return false;}
-            if (r[i] < 0 || r[i] >= 26) {return false;}
+            if (a.at(i) < 0 || a[i] >= 26) {return false;}
+            if (b.at(i) < 0 || b.at(i) >= 26) {return false;}
+            if (c.at(i) < 0 || c.at(i) >= 26) {return false;}
+            if (r.at(i) < 0 || r.at(i) >= 26) {return false;}
         }
 
         return true;
     }
 
-    void process_equation(vector<int> a, vector<int> b, vector<int> c, vector<int> r) { // Encrypted
+    void process_equation(vector<int> &a, vector<int> &b, vector<int> &c, vector<int> &r) { // Encrypted
         for (int i = 0; i < num_digits; i++) {
-            if (a[i] != -1) {columns[i][a[i]]++;}
-            if (b[i] != -1) {columns[i][b[i]]++;}
-            if (c[i] != -1) {columns[i][c[i]]++;}
-
-            results[i] = r[i];
+            if (a.at(i) != -1) {columns[i][a[i]]++;}
+            if (b.at(i) != -1) {columns[i][b[i]]++;}
+            if (c.at(i) != -1) {columns[i][c[i]]++;}
         }
+
+        results = r;
 
         // Leading zeros are set to the symbol -1
     }
