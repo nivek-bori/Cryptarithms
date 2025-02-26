@@ -215,11 +215,11 @@ public:
         return true;
     }
 
-    void process_equation(vector<int> a, vector<int> b, vector<int> c, vector<int> r) {
+    void process_equation(vector<int> a, vector<int> b, vector<int> c, vector<int> r) { // Encrypted
         for (int i = 0; i < num_digits; i++) {
-            columns[i][a[i]]++;
-            columns[i][b[i]]++;
-            columns[i][c[i]]++;
+            if (a[i] != -1) {columns[i][a[i]]++;}
+            if (b[i] != -1) {columns[i][b[i]]++;}
+            if (c[i] != -1) {columns[i][c[i]]++;}
 
             results[i] = r[i];
         }
