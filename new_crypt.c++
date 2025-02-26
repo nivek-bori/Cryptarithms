@@ -19,6 +19,12 @@ private:
     int carry;
 
     void solveColumn() {
+        if (colI == num_digits) {
+            // Assert: All columns solved
+            
+            
+        }
+
         auto &col = columns[colI]; // Symbol to Frequency
 
         int known_sum = carry; // Remember this includes carry
@@ -67,10 +73,10 @@ private:
         }
 
         // Given currnet decrypt_map, verify column
-        verifyCol();
+        stepCol();
     }
 
-    void verifyCol() {
+    void stepCol() {
         array<int, 26> &col = columns.at(colI); // Symbol to Frequency
         int resultS = results.at(colI);
 
@@ -88,9 +94,10 @@ private:
                 sum += decrypt_map.at(s) * col.at(s);
             }
         }
+        int remainder = sum % 10;
 
         if (decrypt_map.at(resultS) != -1) {
-            if (decrypt_map.at(resultS) == carry) {
+            if (decrypt_map.at(resultS) == remainder) {
                 colI++;
                 int old_carry = carry;
                 carry = sum / 10;
@@ -100,22 +107,63 @@ private:
                 colI--;
                 carry = old_carry;
             }
-        } else if (!val_used.at(carry)) {
-            decrypt_map[resultS] = carry;
-            val_used[carry] = true;
+        } else if (!val_used.at(remainder)) {
+            decrypt_map[resultS] = remainder;
+            val_used[remainder] = true;
             
             colI++;
             int old_carry = carry;
             carry = sum / 10;
             
             solveColumn();
-            
+
             decrypt_map[resultS] = -1;
-            val_used[carry] = false;
+            val_used[remainder] = false;
 
             colI--;
             carry = old_carry;
         }
+    }
+
+    bool verify_solution() {
+        // Assert: All columns correctly solved
+        int carryLoc = 0;
+            for (int cI = 0; cI < num_digits; cI++) {
+                array<int, 26> &col = columns.at(cI); // Symbol to Frequency
+                int resultS = results.at(cI);
+                
+                // Assert: All symbols in column are assigned
+                for (int s = 0; s < 26; s++) {
+                    if (col.at(s) != -1 && decrypt_map.at(s) == -1) {
+                        cerr << "ERROR: Symbol in equation not assigned" << endl;
+                        return;
+                    }
+                }
+                if (decrypt_map.at(resultS) == -1) {
+                    cerr << "ERROR: Result symbol not assigned" << endl;
+                    return;
+                }
+
+                int colSum = carryLoc;
+                for (int s = 0; s < 26; s++) {
+                    if (col.at(s) != -1) {
+                        colSum += decrypt_map.at(s) * col.at(s);
+                    }
+                }
+
+                int remainder = colSum % 10;
+                if (decrypt_map.at(resultS) != remainder) {
+                    cerr << "ERROR: Result value incorrect" << endl;
+                    return;
+                }
+
+                carryLoc = colSum / 10;
+            }
+
+            if (carryLoc != 0) {
+                cerr << "ERROR: Final carry not 0" << endl;
+                return;
+            }
     }
 
 public:
@@ -175,5 +223,7 @@ public:
 
             results[i] = r[i];
         }
+
+        // Leading zeros are set to the symbol -1
     }
 };

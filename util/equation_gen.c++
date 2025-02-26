@@ -52,7 +52,7 @@ private:
         vector<int> C;
         vector<int> R;
     
-        for (int i = 0; i < numDigits + 1; i++) {
+        for (int i = 0; i < numDigits; i++) {
             A.push_back(a % 10);
             B.push_back(b % 10);
             C.push_back(c % 10);
@@ -79,9 +79,8 @@ public:
     array<vector<int>, 4> equationStore;
     array<vector<int>, 4> encryptedEquationStore;
 
-    Encryptor(int digits) :numDigits(digits) {
-        numDigits = digits;
-    }
+    Encryptor(int digits): numDigits(digits + 1) 
+    {}
 
     array<vector<int>, 4> generateEncryptedEquation() {
         array<int, 10> encryptMap = generateEncryptMap();
@@ -92,13 +91,22 @@ public:
         vector<int> enC;
         vector<int> enR;
 
-        for (int i = 0; i < numDigits + 1; i++) {
+        for (int i = 0; i < numDigits - 1; i++) {
             enA.push_back(encryptMap[equation[0][i]]);
             enB.push_back(encryptMap[equation[1][i]]);
             enC.push_back(encryptMap[equation[2][i]]);
             enR.push_back(encryptMap[equation[3][i]]);
-            enR.push_back(encryptMap[equation[3][i]]); // Because R can be one more digit
+            enR.push_back(encryptMap[equation[4][i]]);
         }
+        if (equation[0][numDigits - 1] != 0) {enA.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        else {enA.push_back(-1);}
+        if (equation[1][numDigits - 1] != 0) {enB.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        else {enB.push_back(-1);}
+        if (equation[2][numDigits - 1] != 0) {enC.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        else {enC.push_back(-1);}
+        if (equation[3][numDigits - 1] != 0) {enR.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        else {enR.push_back(-1);}
+
 
         array<vector<int>, 4> encryptedEquation;
         encryptedEquation[0] = enA;

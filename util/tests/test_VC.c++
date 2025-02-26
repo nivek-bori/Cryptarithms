@@ -50,6 +50,7 @@ void verifyCol() {
         }
     }
     int remainder = sum % 10;
+    cout << "Remainder: " << remainder << endl; // TODO: REMOVE
 
     if (decrypt_map.at(resultS) != -1) {
         if (decrypt_map.at(resultS) == remainder) {
@@ -66,6 +67,7 @@ void verifyCol() {
             carry = old_carry;
         } else {
             testing_flag = false; // TODO: REMOVE
+            cout << "False Case 1" << endl; // TODO: REMOVE
             logValues(); // TODO: REMOVE
         }
     } else if (!val_used.at(remainder)) {
@@ -88,6 +90,7 @@ void verifyCol() {
         carry = old_carry;
     } else {
         testing_flag = false; // TODO: REMOVE
+        cout << "False Case 2" << endl; // TODO: REMOVE
         logValues(); // TODO: REMOVE
     }
 }
@@ -104,47 +107,48 @@ int main() {
 
     testing_flag = false;
 
-    int unit_test_num = 1;
+    int unit_test_num = 3;
     switch (unit_test_num) {
         case 0: // Not all symbols assigned
             decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
             col[3] = 2;
             results[0] = 4;
             break; // Assert: Error & no continuation
-        case 1: // Result symbol assigned correctly but not result value
+        case 1: // Result symbol assigned correctly but not result value 12 spread
             decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
-            decrypt_map[3] = 5; col[3] = 2; val_used[3] = true;
+            decrypt_map[3] = 6; col[3] = 2; val_used[6] = true;
             results[0] = 8;
-            break; // Assert: Success
+            break; // Assert: Success, Decrypt_map added {8 : 4}, carry = 1
         case 2: // Result symbol assigned correctly but not result value
+            decrypt_map[1] = 9; col[1] = 1; val_used[9] = true;
+            decrypt_map[3] = 8; col[3] = 1; val_used[8] = true;
+            decrypt_map[9] = 5; col[9] = 1; val_used[5] = true;
+            results[0] = 5;
+            break; // Assert: Success, decrypt_map added {5 : 2}, carry = 2
+        case 3: // Result value assigned incorrectly
             decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
-            decrypt_map[3] = 8; col[3] = 2; val_used[3] = true;
-            results[0] = 8;
-            break; // Assert: Success
-        case 3: // Result symbol assigned incorrectly
-            decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
-            decrypt_map[3] = 3; col[3] = 1; val_used[3] = true;
-            decrypt_map[4] = 4; results[0] = 4; val_used[4] = true;
+            decrypt_map[3] = 3; col[3] = 2; val_used[3] = true;
+            decrypt_map[4] = 6; results[0] = 4; val_used[6] = true;
             break; // Assert: No continuation
         case 4: // Result symbol not assigned
             decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
             decrypt_map[3] = 3; col[3] = 1; val_used[3] = true;
             decrypt_map[6] = 5; col[6] = 1; val_used[5] = true;
             results[0] = 4; 
-            break; // Assert: Decrypt_map added {4 : 10}
+            break; // Assert: Decrypt_map added {4 : 0}, carry = 1
         case 5: // Unused symbol assigned
             decrypt_map[1] = 2; col[1] = 1; val_used[2] = true;
             decrypt_map[3] = 3; col[3] = 1; val_used[3] = true;
-            decrypt_map[6] = 7; col[6] = 1; val_used[7] = true;
+            decrypt_map[6] = 1; col[6] = 1; val_used[1] = true;
             decrypt_map[7] = 9; val_used[9] = true;
-            decrypt_map[10] = 1; val_used[10] = true;
-            results[0] = 6; 
-            break; // Assert: Decyrpt_map added {6: 12}
+            decrypt_map[10] = 2; val_used[2] = true;
+            results[0] = 9; 
+            break; // Assert: Decyrpt_map added {9 : 6}, carry = 0
         case 6: // Incorrect result value
             decrypt_map[1] = 3; col[1] = 1; val_used[3] = true;
             decrypt_map[3] = 4; col[3] = 1; val_used[4] = true;
-            decrypt_map[4] = 2; col[0] = 4; val_used[2] = true;
-            decrypt_map[9] = 1; results[0] = 10; val_used[1] = true;
+            decrypt_map[4] = 2; col[4] = 1; val_used[2] = true;
+            decrypt_map[10] = 1; results[0] = 10; val_used[1] = true;
             break; // Assert: No continuation
     }
 
