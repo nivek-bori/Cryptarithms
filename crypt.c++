@@ -25,32 +25,17 @@ private:
     int current_solutions;
 
     void solveColumn() {
-        if (display_code >= 1) {cout << "Solve Column" << endl;}
-        if (colI == num_digits) {
-            // Assert: All columns solved
-            if (verify_solution()) {
-                current_solutions++;
-            }
+        if (display_code >= 1) {cout << "Solve Column: " << colI << endl;}
 
+        if (colI == num_digits) {
+            if (verify_solution()) {current_solutions++;}
             return;
         }
 
-        auto &col = columns.at(colI); // Symbol to Frequency
-
-        int known_sum = carry; // Remember this includes carry
+        array<int, 26> &col = columns.at(colI); // Symbol to Frequency
+        int known_sum = carry;  // Remember this includes carry
         array<int, 10> unknown; // Symbols to Value
-        processCol(col, known_sum, unknown);
-        
-        // Recursive function that explores tree
-        assignUnknown(known_sum, unknown);
-    }
-
-    // Return is passed through referenced - known_sum & unknown
-    void processCol(array<int, 26> &col, int &known_sum, array<int, 10> &unknown) {
-        if (display_code >= 1) {cout << "Process Column" << endl;}
-
-        known_sum = carry; // Referenced return
-        unknown.fill(-1); // // Referenced return
+        unknown.fill(-1);
 
         int unknownI = 0;
         for (int s = 0; s < 26; s++) {
@@ -62,33 +47,62 @@ private:
                 }
             }
         }
+
+        // Recursive function that explores tree
+        assignUnknown(known_sum, unknown);
     }
 
-    void assignUnknown(int &known_sum, array<bool, 26> &unknown) {
-        if (display_code >= 1) {cout << "Assign Unknown" << endl;}
+    void assignUnknown(int &known_sum, array<int, 10> &unknown) {
+        if (display_code >= 1) {cout << "Assign Unknown - ";}
+        if (display_code >= 2) {
+            cout << "Unknown: ";
+            for (int i = 0; i < 10 && unknown.at(i) != -1; i++) {cout << unknown.at(i) << ", ";} cout << endl;
+        }
 
         array<int, 26> &col = columns.at(colI); // Symbol to Frequency
 
         int unknownI = 0;
         while (unknownI >= 0) {
+            if (display_code >= 2) {
+                cout << "UnknownI: " << unknownI << endl;
+                cout << "AU - Decrypt Map: ";
+                for (int s = 0; s < 26; s++) {if (decrypt_map.at(s) != -1) {cout << s << "-" << decrypt_map.at(s) << ", ";}}
+                cout << endl;
+            }
+
+            if (unknown[unknownI] == -1) {
+                stepCol();
+                unknownI--;
+                continue;
+            }
+
             int next_val = decrypt_map.at(unknown[unknownI]);
+            decrypt_map[unknown[unknownI]] = -1;
+            val_used[next_val] = false;
+
+            next_val++;
             while (next_val < 10 && val_used[next_val]){next_val++;}
 
             if (next_val == 10) {
-                decrypt_map[unknown[unknownI]] = -1;
-                val_used[next_val] = false;
                 unknownI--;
                 continue;
             } else {
                 decrypt_map[unknown[unknownI]] = next_val;
                 val_used[next_val] = true;
                 unknownI++;
+                continue;
             }
         }
     }
 
     void stepCol() {
         if (display_code >= 1) {cout << "Step Col" << endl;}
+        if (display_code >= 2) {
+            cout << "SC - Decrypt Map: ";
+            for (int s = 0; s < 26; s++) {if (decrypt_map.at(s) != -1) {cout << s << "-" << decrypt_map.at(s) << ", ";}}
+            cout << endl;
+        }
+
         array<int, 26> &col = columns.at(colI); // Symbol to Frequency
         int resultS = results.at(colI);
 

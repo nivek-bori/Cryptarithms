@@ -7,26 +7,31 @@ private:
     int numDigits;
 
     array<int, 10> generateEncryptMap() {
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<> distribSolution(0, 25);
-    
-        array<int, 10> encryptMap; // Value to symbol
-        fill(encryptMap.begin(), encryptMap.end(), -1);
-
-        array<bool, 26> symbolUsed;
-        fill(symbolUsed.begin(), symbolUsed.end(), false);
-    
-        for (int val = 0; val < 10; val++) {
-            int symbol = distribSolution(gen);
-            while (symbolUsed[symbol]) {symbol = distribSolution(gen);}
-            
-            encryptMap[val] = symbol;
-            symbolUsed[symbol] = true;
-        }
-    
-        encryptMapStore = encryptMap;
+        // TODO: Switch back
+        array<int, 10> encryptMap;
+        for (int i = 0; i < 10; i++) {encryptMap[i] = i;}
         return encryptMap;
+
+        // random_device rd;
+        // mt19937 gen(rd());
+        // uniform_int_distribution<> distribSolution(0, 25);
+    
+        // array<int, 10> encryptMap; // Value to symbol
+        // fill(encryptMap.begin(), encryptMap.end(), -1);
+
+        // array<bool, 26> symbolUsed;
+        // fill(symbolUsed.begin(), symbolUsed.end(), false);
+    
+        // for (int val = 0; val < 10; val++) {
+        //     int symbol = distribSolution(gen);
+        //     while (symbolUsed[symbol]) {symbol = distribSolution(gen);}
+            
+        //     encryptMap[val] = symbol;
+        //     symbolUsed[symbol] = true;
+        // }
+    
+        // encryptMapStore = encryptMap;
+        // return encryptMap;
     }
     
     array<vector<int>, 4> generateEquation() {

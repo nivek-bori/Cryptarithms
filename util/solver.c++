@@ -20,7 +20,7 @@ static long long toNumber(const string &s, const unordered_map<char,int> &assign
 }
 
 int main(){
-    string equa = "6221 + 5997 + 7479 = 19697";
+    string equa = "32 + 24 + 82 = 138";
 
     // Remove spaces and split by operators
     string A, B, C, R;

@@ -3,16 +3,21 @@
 #include "util/equation_gen.c++"
 
 int main() {
+    int display_code = 2;
+
     int num_equations = 1;
-    int num_digits = 1; // This is the result's # digits, num_digits - 1 is the number's # digits
+    int num_digits = 2; // This is the result's # digits, num_digits - 1 is the number's # digits
 
     unordered_map<string, int> equationSolutions;
 
     EquationGenerator generator(num_digits);
-    CryptarithmSolver solver(num_digits, 2);
+    CryptarithmSolver solver(num_digits, display_code);
 
     for (int t = 0; t < num_equations; t++) {
         array<vector<int>, 4> equation = generator.generateEncryptedEquation();
+
+        if (display_code >= 2) {cout << generator.equation << endl;}
+
         int solutions = solver.solve(equation[0], equation[1], equation[2], equation[3]);
 
         string equationStr = generator.equation;
