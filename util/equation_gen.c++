@@ -32,7 +32,7 @@ private:
     array<vector<int>, 4> generateEquation() {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> distrib(pow(10, numDigits - 1), pow(10, numDigits) - 1);
+        uniform_int_distribution<> distrib(pow(10, numDigits - 2), pow(10, numDigits - 1) - 1);
     
         // Generating Numbers
         int a = distrib(gen);
@@ -98,7 +98,6 @@ public:
             enB.push_back(encryptMap[equation[1][i]]);
             enC.push_back(encryptMap[equation[2][i]]);
             enR.push_back(encryptMap[equation[3][i]]);
-            enR.push_back(encryptMap[equation[4][i]]);
         }
         if (equation[0][numDigits - 1] != 0) {enA.push_back(encryptMap[equation[0][numDigits - 1]]);}
         else {enA.push_back(-1);}
@@ -120,7 +119,7 @@ public:
         return encryptedEquation;
     }
 
-    void display() const {
+    void display() {
         cout << "Encrypt Map (Value -> Symbol):\n";
         for (int i = 0; i < 10; i++) {cout << i << " -> " << encryptMapStore[i] << "\n";}
         cout << endl;
@@ -145,28 +144,28 @@ public:
     }
 };
 
-int main() {
-    int numDigits = 10;
-    int displayCode = 0; // 0 - No display, 1 - Minumal display, 2 - All display
+// int main() {
+//     int numDigits = 1;
+//     int displayCode = 2; // 0 - No display, 1 - Minumal display, 2 - All display
 
-    EquationGenerator encryptor(numDigits);
-    array<vector<int>, 4> equation = encryptor.generateEncryptedEquation();
+//     EquationGenerator encryptor(numDigits);
+//     array<vector<int>, 4> equation = encryptor.generateEncryptedEquation();
 
-    switch (displayCode) {
-        case 0:
-            break;
-        case 1:
-            cout << "\nEncrypted Equation (symbols):\n";
-            for (int i = 0; i < equation[0].size(); i++) {cout << equation[0][i] << " ";} cout << "\n";
-            for (int i = 0; i < equation[1].size(); i++) {cout << equation[1][i] << " ";} cout << "\n";
-            for (int i = 0; i < equation[2].size(); i++) {cout << equation[2][i] << " ";} cout << "\n";
-            for (int i = 0; i < equation[3].size(); i++) {cout << equation[3][i] << " ";} cout << endl;
-            break;
-        case 2:
-            encryptor.display();
-            break;
-    }
+//     switch (displayCode) {
+//         case 0:
+//             break;
+//         case 1:
+//             cout << "\nEncrypted Equation (symbols):\n";
+//             for (int i = 0; i < equation[0].size(); i++) {cout << equation[0][i] << " ";} cout << "\n";
+//             for (int i = 0; i < equation[1].size(); i++) {cout << equation[1][i] << " ";} cout << "\n";
+//             for (int i = 0; i < equation[2].size(); i++) {cout << equation[2][i] << " ";} cout << "\n";
+//             for (int i = 0; i < equation[3].size(); i++) {cout << equation[3][i] << " ";} cout << endl;
+//             break;
+//         case 2:
+//             encryptor.display();
+//             break;
+//     }
 
-    cout << "Task End" << endl;
-    return 0;
-}
+//     cout << "Task End" << endl;
+//     return 0;
+// }

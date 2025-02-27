@@ -4,12 +4,12 @@
 
 int main() {
     int num_equations = 1;
-    int num_digits = 4;
+    int num_digits = 1; // This is the result's # digits, num_digits - 1 is the number's # digits
 
     unordered_map<string, int> equationSolutions;
 
     EquationGenerator generator(num_digits);
-    CryptarithmSolver solver(num_digits);
+    CryptarithmSolver solver(num_digits, 2);
 
     for (int t = 0; t < num_equations; t++) {
         array<vector<int>, 4> equation = generator.generateEncryptedEquation();
@@ -20,8 +20,8 @@ int main() {
     }
 
     cout << "Equation Solutions:\n";
-    for (auto& [equation, solutions] : equationSolutions) {
-        cout << equation << " -> " << solutions << endl;
+    for (auto& equa_sol_pair : equationSolutions) {
+        cout << equa_sol_pair.first << " -> " << equa_sol_pair.second << endl;
     }
 
     cout << "TASK END" << endl;
