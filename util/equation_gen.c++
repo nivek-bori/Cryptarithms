@@ -7,31 +7,26 @@ private:
     int numDigits;
 
     array<int, 10> generateEncryptMap() {
-        // TODO: Switch back
-        array<int, 10> encryptMap;
-        for (int i = 0; i < 10; i++) {encryptMap[i] = i;}
-        return encryptMap;
-
-        // random_device rd;
-        // mt19937 gen(rd());
-        // uniform_int_distribution<> distribSolution(0, 25);
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> distribSolution(0, 25);
     
-        // array<int, 10> encryptMap; // Value to symbol
-        // fill(encryptMap.begin(), encryptMap.end(), -1);
+        array<int, 10> encryptMap; // Value to symbol
+        fill(encryptMap.begin(), encryptMap.end(), -1);
 
-        // array<bool, 26> symbolUsed;
-        // fill(symbolUsed.begin(), symbolUsed.end(), false);
+        array<bool, 26> symbolUsed;
+        fill(symbolUsed.begin(), symbolUsed.end(), false);
     
-        // for (int val = 0; val < 10; val++) {
-        //     int symbol = distribSolution(gen);
-        //     while (symbolUsed[symbol]) {symbol = distribSolution(gen);}
+        for (int val = 0; val < 10; val++) {
+            int symbol = distribSolution(gen);
+            while (symbolUsed[symbol]) {symbol = distribSolution(gen);}
             
-        //     encryptMap[val] = symbol;
-        //     symbolUsed[symbol] = true;
-        // }
+            encryptMap[val] = symbol;
+            symbolUsed[symbol] = true;
+        }
     
-        // encryptMapStore = encryptMap;
-        // return encryptMap;
+        encryptMapStore = encryptMap;
+        return encryptMap;
     }
     
     array<vector<int>, 4> generateEquation() {
@@ -40,12 +35,23 @@ private:
         uniform_int_distribution<> distrib(pow(10, numDigits - 2), pow(10, numDigits - 1) - 1);
     
         // Generating Numbers
-        int a = distrib(gen);
-        int b = distrib(gen);
-        int c = distrib(gen);
-        int r = a + b + c;
+        int a, b, c;
+        int r = 0;
+
+        while (r < pow(10, numDigits - 1)) {
+            a = distrib(gen);
+            b = distrib(gen);
+            c = distrib(gen);
+            r = a + b + c;
+        }
+
+        // REMOVE: Testing
+        // a = 7703; b = 9849; c = 8009;
+        // r = a + b + c;
+        // REMOV: Testing
+
         equation = to_string(a) + " + " + to_string(b) + " + " + to_string(c) + " = " + to_string(r);
-        
+
         array<int, 4> equationNumbers;
         equationNumbers[0] = a;
         equationNumbers[1] = b;
@@ -86,7 +92,7 @@ public:
     array<vector<int>, 4> equationStore;
     array<vector<int>, 4> encryptedEquationStore;
 
-    EquationGenerator(int digits): numDigits(digits + 1) 
+    EquationGenerator(int digits, int display_code): numDigits(digits + 1) 
     {}
 
     array<vector<int>, 4> generateEncryptedEquation() {
@@ -106,11 +112,11 @@ public:
         }
         if (equation[0][numDigits - 1] != 0) {enA.push_back(encryptMap[equation[0][numDigits - 1]]);}
         else {enA.push_back(-1);}
-        if (equation[1][numDigits - 1] != 0) {enB.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        if (equation[1][numDigits - 1] != 0) {enB.push_back(encryptMap[equation[1][numDigits - 1]]);}
         else {enB.push_back(-1);}
-        if (equation[2][numDigits - 1] != 0) {enC.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        if (equation[2][numDigits - 1] != 0) {enC.push_back(encryptMap[equation[2][numDigits - 1]]);}
         else {enC.push_back(-1);}
-        if (equation[3][numDigits - 1] != 0) {enR.push_back(encryptMap[equation[0][numDigits - 1]]);}
+        if (equation[3][numDigits - 1] != 0) {enR.push_back(encryptMap[equation[3][numDigits - 1]]);}
         else {enR.push_back(-1);}
 
 
@@ -150,13 +156,13 @@ public:
 };
 
 // int main() {
-//     int numDigits = 1;
-//     int displayCode = 2; // 0 - No display, 1 - Minumal display, 2 - All display
+//     int num_digits = 4;
+//     int display_code = 2; // 0 - No display, 1 - Minumal display, 2 - All display
 
-//     EquationGenerator encryptor(numDigits);
+//     EquationGenerator encryptor(num_digits, display_code);
 //     array<vector<int>, 4> equation = encryptor.generateEncryptedEquation();
 
-//     switch (displayCode) {
+//     switch (display_code) {
 //         case 0:
 //             break;
 //         case 1:

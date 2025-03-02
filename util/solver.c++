@@ -20,7 +20,7 @@ static long long toNumber(const string &s, const unordered_map<char,int> &assign
 }
 
 int main(){
-    string equa = "32 + 24 + 82 = 138";
+    string equa = "1561 + 8439 + 5031 = 15031";
 
     // Remove spaces and split by operators
     string A, B, C, R;
@@ -42,6 +42,12 @@ int main(){
     
     R = equa.substr(pos + 1);
     R.erase(remove(R.begin(), R.end(), ' '), R.end());
+
+    unordered_set<char> leadingLetters;
+    if (A.size() > 1) leadingLetters.insert(A[0]);
+    if (B.size() > 1) leadingLetters.insert(B[0]);
+    if (C.size() > 1) leadingLetters.insert(C[0]);
+    if (R.size() > 1) leadingLetters.insert(R[0]);
 
     // Collect all distinct letters in A, B, C, R
     unordered_set<char> uniqueLetters;
@@ -76,15 +82,11 @@ int main(){
     // We do a depth-first search over the letters.
     vector<bool> used(10, false);  // used[d] = true if digit d is taken
 
-    function<void(int, unordered_map<char,int>&)> backtrack = 
-    [&](int idx, unordered_map<char,int> &assign) {
+    function<void(int, unordered_map<char,int>&)> backtrack = [&](int idx, unordered_map<char,int> &assign) {
         // If we've assigned all letters
         if (idx == n) {
-            // Check leading zero constraints
-            if (isLeadingZero(A, assign)) return;
-            if (isLeadingZero(B, assign)) return;
-            if (isLeadingZero(C, assign)) return;
-            if (isLeadingZero(R, assign)) return;
+            // No need to check leading zeros here anymore
+            // They're checked during assignment
 
             // Compute numeric values
             long long valA = toNumber(A, assign);
@@ -94,16 +96,20 @@ int main(){
 
             if (valA + valB + valC == valR) {
                 solutions.push_back(assign);
-
-                
             }
             return;
         }
 
         // Current letter
         char letter = letters[idx];
+        
         // Try assigning each digit 0..9 (that hasn't been used yet)
         for (int digit = 0; digit < 10; digit++) {
+            // Skip assigning 0 to leading letters
+            if (digit == 0 && leadingLetters.count(letter) > 0) {
+                continue;
+            }
+            
             if (!used[digit]) {
                 used[digit] = true;
                 assign[letter] = digit;
@@ -113,8 +119,6 @@ int main(){
                 // revert
                 used[digit] = false;
                 assign.erase(letter);
-                
-                // No pruning or optimization: we systematically try everything
             }
         }
     };

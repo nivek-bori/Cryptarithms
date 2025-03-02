@@ -15,8 +15,7 @@ const int numBins = 3;
 // Structure to hold each sample with its difficulty and bin label.
 struct DataSample {
     json data;
-    double difficulty;
-    int bin;
+    int difficulty;
 };
 
 // Utility to compute a quantile from a sorted vector.
@@ -26,7 +25,7 @@ double compute_quantile(const vector<double>& sorted, double quantile) {
 }
 
 int main() {
-    string input_filename = "data.jsonl";
+    string input_filename = "outputs/data.jsonl";
     ifstream infile(input_filename);
     if (!infile.is_open()){
         cerr << "Error opening input file: " << input_filename << endl;
@@ -35,7 +34,6 @@ int main() {
     
     vector<DataSample> samples;
     string line;
-    getline(infile, line); // Skip metadata line
     
     // Read all lines of json data
     while(getline(infile, line)) {
@@ -48,11 +46,11 @@ int main() {
             continue;
         }
         
-        if(j.contains("num_solutions") && j["num_solutions"].is_number()){
-            DataSample sample;
-            sample.data = j;
-            sample.difficulty = j["num_solutions"].get<double>();
-            samples.push_back(sample);
+        if (j.contains("num_solutions") && j["num_solutions"].is_number()) {
+                DataSample sample;
+                sample.data = j;
+                sample.difficulty = j["num_solutions"].get<int>();
+                samples.push_back(sample);
         }
     }
     infile.close();
@@ -62,6 +60,7 @@ int main() {
         return 1;
     }
     
+    // Sorting difficulty
     vector<double> difficulties;
     for (const auto& s : samples) {
         difficulties.push_back(s.difficulty);
@@ -76,12 +75,13 @@ int main() {
     vector<vector<DataSample>> categorized_samples(numBins);
     
     for(auto &s : samples) {
-        for (int i = numBins - 2; i >= 0; i--) {
-            if (s.difficulty <= quantiles[i]) {
-                categorized_samples[i].push_back(s);
-                break;
+        int bin = 0;  // Default to lowest bin
+        for (int i = 0; i < numBins - 1; i++) {
+            if (s.difficulty > quantiles[i]) {
+                bin = i + 1;
             }
         }
+        categorized_samples[bin].push_back(s);
     }
     
     double test_ratio = 0.2;
@@ -92,20 +92,18 @@ int main() {
                                 vector<DataSample>& train, vector<DataSample>& test) {
         vector<DataSample> shuffled = bin_samples;
         shuffle(shuffled.begin(), shuffled.end(), rng);
-        size_t test_count = static_cast<size_t>(shuffled.size() * test_ratio);
+        size_t test_count = round(shuffled.size() * test_ratio);
         test.insert(test.end(), shuffled.begin(), shuffled.begin() + test_count);
         train.insert(train.end(), shuffled.begin() + test_count, shuffled.end());
     };
     
     vector<DataSample> train_samples, test_samples;
-    stratified_split(easy_samples, train_samples, test_samples);
-    stratified_split(medium_samples, train_samples, test_samples);
-    stratified_split(hard_samples, train_samples, test_samples);
-    
-    // Write training samples to a JSONL file.
-    ofstream train_file("train.jsonl");
-    // Write testing samples to a JSONL file.
-    ofstream test_file("test.jsonl");
+    for (int i = 0; i < numBins; i++) {
+        stratified_split(categorized_samples[i], train_samples, test_samples);
+    }
+
+    ofstream train_file("outputs/train.jsonl", ios::trunc);
+    ofstream test_file("outputs/test.jsonl", ios::trunc);
     if(!train_file.is_open() || !test_file.is_open()){
         cerr << "Error opening output file(s)." << endl;
         return 1;
@@ -121,9 +119,7 @@ int main() {
     train_file.close();
     test_file.close();
     
-    cout << "Stratified sampling complete." << endl;
-    cout << "Train samples: " << train_samples.size() 
-         << ", Test samples: " << test_samples.size() << endl;
-    
+    clog << "Train samples: " << train_samples.size() << ", Test samples: " << test_samples.size() << endl;
+    clog << "TASK END" << endl;
     return 0;
 }
