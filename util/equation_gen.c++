@@ -18,14 +18,13 @@ private:
         fill(symbolUsed.begin(), symbolUsed.end(), false);
     
         for (int val = 0; val < 10; val++) {
-            int symbol = distribSolution(gen);
-            while (symbolUsed[symbol]) {symbol = distribSolution(gen);}
+            int offset = distribSolution(gen);
+            while (symbolUsed[offset]) {offset = distribSolution(gen);}
             
-            encryptMap[val] = symbol;
-            symbolUsed[symbol] = true;
+            encryptMap[val] = offset;
+            symbolUsed[offset] = true;
         }
     
-        encryptMapStore = encryptMap;
         return encryptMap;
     }
     
@@ -35,9 +34,7 @@ private:
         uniform_int_distribution<> distrib(pow(10, numDigits - 2), pow(10, numDigits - 1) - 1);
     
         // Generating Numbers
-        int a, b, c;
-        int r = 0;
-
+        int a, b, c; int r = 0;
         while (r < pow(10, numDigits - 1)) {
             a = distrib(gen);
             b = distrib(gen);
@@ -50,13 +47,7 @@ private:
         // r = a + b + c;
         // REMOV: Testing
 
-        equation = to_string(a) + " + " + to_string(b) + " + " + to_string(c) + " = " + to_string(r);
-
-        array<int, 4> equationNumbers;
-        equationNumbers[0] = a;
-        equationNumbers[1] = b;
-        equationNumbers[2] = c;
-        equationNumbers[3] = r;
+        equationStr = to_string(a) + " + " + to_string(b) + " + " + to_string(c) + " = " + to_string(r);
 
         // Formatting Numbers - Last value (First digit) in A, B, C will always be 0
         vector<int> A;
@@ -78,80 +69,52 @@ private:
         equation[1] = B;
         equation[2] = C;
         equation[3] = R;
-    
 
-        equationStore = equation;
-        equationNumbersStore = equationNumbers;
         return equation;
     }
 
 public:
-    string equation;
-    array<int, 10> encryptMapStore;
-    array<int, 4> equationNumbersStore;
-    array<vector<int>, 4> equationStore;
-    array<vector<int>, 4> encryptedEquationStore;
+    array<vector<int>, 4> encryptedEquationRet;
+    array<string, 4> encryptedEquationStrRet;
+    string encryptedEquationFullStrRet;
+
+    string equationStr;
 
     EquationGenerator(int digits, int display_code): numDigits(digits + 1) 
     {}
 
-    array<vector<int>, 4> generateEncryptedEquation() {
+    void generateEncryptedEquation() {
         array<int, 10> encryptMap = generateEncryptMap();
         array<vector<int>, 4> equation = generateEquation();
 
-        vector<int> enA;
-        vector<int> enB;
-        vector<int> enC;
-        vector<int> enR;
+        array<vector<int>, 4> encryptedEquationSol; // For solver
+        array<string, 4> encryptedEquationData; // For data
 
-        for (int i = 0; i < numDigits - 1; i++) {
-            enA.push_back(encryptMap[equation[0][i]]);
-            enB.push_back(encryptMap[equation[1][i]]);
-            enC.push_back(encryptMap[equation[2][i]]);
-            enR.push_back(encryptMap[equation[3][i]]);
+        for (int enI = 0; enI < 4; enI++) {
+            vector<int> enNum;
+            string enNumStr = "";
+
+            for (int i = 0; i < numDigits - 1; i++) {
+                int offset = encryptMap[equation[enI][i]];
+                enNum.push_back(offset);
+                enNumStr += 'A' + offset;
+            }
+
+            if (equation[enI][numDigits - 1] != 0) {
+                int offset = encryptMap[equation[enI][numDigits - 1]];
+                enNum.push_back(offset);
+                enNumStr += 'A' + offset;
+            } else {
+                enNum.push_back(-1);
+            }
+
+            encryptedEquationSol[enI] = enNum;
+            encryptedEquationData[enI] = enNumStr;
         }
-        if (equation[0][numDigits - 1] != 0) {enA.push_back(encryptMap[equation[0][numDigits - 1]]);}
-        else {enA.push_back(-1);}
-        if (equation[1][numDigits - 1] != 0) {enB.push_back(encryptMap[equation[1][numDigits - 1]]);}
-        else {enB.push_back(-1);}
-        if (equation[2][numDigits - 1] != 0) {enC.push_back(encryptMap[equation[2][numDigits - 1]]);}
-        else {enC.push_back(-1);}
-        if (equation[3][numDigits - 1] != 0) {enR.push_back(encryptMap[equation[3][numDigits - 1]]);}
-        else {enR.push_back(-1);}
 
-
-        array<vector<int>, 4> encryptedEquation;
-        encryptedEquation[0] = enA;
-        encryptedEquation[1] = enB;
-        encryptedEquation[2] = enC;
-        encryptedEquation[3] = enR;
-
-        encryptedEquationStore = encryptedEquation;
-        return encryptedEquation;
-    }
-
-    void display() {
-        cout << "Encrypt Map (Value -> Symbol):\n";
-        for (int i = 0; i < 10; i++) {cout << i << " -> " << encryptMapStore[i] << "\n";}
-        cout << endl;
-
-        cout << "\nEquation Numbers:\n";
-        cout << equationNumbersStore[0] << " + " 
-             << equationNumbersStore[1] << " + " 
-             << equationNumbersStore[2] << " = " 
-             << equationNumbersStore[3] << endl;
-
-        cout << "\nOriginal Equation (digits):\n";
-        for (const auto& num : equationStore[0]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : equationStore[1]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : equationStore[2]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : equationStore[3]) { cout << num << " "; } cout << endl;
-
-        cout << "\nEncrypted Equation (symbols):\n";
-        for (const auto& num : encryptedEquationStore[0]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : encryptedEquationStore[1]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : encryptedEquationStore[2]) { cout << num << " "; } cout << "\n";
-        for (const auto& num : encryptedEquationStore[3]) { cout << num << " "; } cout << endl;
+        encryptedEquationRet = encryptedEquationSol;
+        encryptedEquationStrRet = encryptedEquationData;
+        encryptedEquationFullStrRet = encryptedEquationData[0] + " + " + encryptedEquationData[1] + " + " + encryptedEquationData[2] + " = " + encryptedEquationData[3];
     }
 };
 
